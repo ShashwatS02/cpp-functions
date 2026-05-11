@@ -1,56 +1,79 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
-    
-    int t;
-    cin >> t;
-    
-    while (t--) {
-        int n;
-        cin >> n;
-        
-        vector<long long> a(n);
-        for (int i = 0; i < n; i++) {
-            cin >> a[i];
-        }
-        
-        long long initial_val = 0;
-        for (int i = 0; i < n; i++) {
-            if (i % 2 == 0) {
-                initial_val += a[i];
-            } else {
-                initial_val -= a[i];
-            }
-        }
-        
-        long long result = initial_val;
-        
-        for (int l = 0; l < n; l++) {
-            for (int r = l; r < n; r++) {
-                vector<long long> temp = a;
-                reverse(temp.begin() + l, temp.begin() + r + 1);
-                
-                long long val_after_swap = 0;
-                for (int i = 0; i < n; i++) {
-                    if (i % 2 == 0) {
-                        val_after_swap += temp[i];
-                    } else {
-                        val_after_swap -= temp[i];
-                    }
-                }
-                
-                long long swap_cost = r - l;
-                long long total = swap_cost + val_after_swap;
-                
-                result = max(result, total);
-            }
-        }
-        
-        cout << result << '\n';
+#define int long long int
+#define vi vector<int>
+#define print(i) cout << i << endl;
+#define RE return
+
+/**
+ * build() solves the problem of moving all '*' to be consecutive
+ * with the minimum total cost by centering them around the median star.
+ */
+void build() {
+    int n;
+    if (!(cin >> n)) RE;
+    string s;
+    cin >> s;
+
+    // 1. Count total number of stars
+    int total_stars = 0;
+    for (char c : s) {
+        if (c == '*') total_stars++;
     }
-    
-    return 0;
+
+    // Edge case: if there are no stars or just one, no moves are needed
+    if (total_stars <= 1) {
+        print(0);
+        RE;
+    }
+
+    // 2. Find the position of the median star
+    int target_star_index = (total_stars + 1) / 2;
+    int pos = -1, curr_count = 0;
+    for (int i = 0; i < n; i++) {
+        if (s[i] == '*') {
+            curr_count++;
+            if (curr_count == target_star_index) {
+                pos = i; // This is our anchor point
+                break;
+            }
+        }
+    }
+
+    int total_moves = 0;
+    int stars_seen = 0;
+
+    // 3. Calculate moves for stars to the left of the median
+    for (int i = 0; i < pos; i++) {
+        if (s[i] == '*') {
+            // They should move to: pos - (remaining_stars_to_the_left)
+            total_moves += (pos - i - (target_star_index - stars_seen - 1));
+            stars_seen++;
+        }
+    }
+
+    // 4. Calculate moves for stars to the right of the median
+    stars_seen = 0;
+    for (int i = pos + 1; i < n; i++) {
+        if (s[i] == '*') {
+            stars_seen++;
+            // They should move to: pos + stars_seen
+            total_moves += (i - (pos + stars_seen));
+        }
+    }
+
+    print(total_moves);
+}
+
+int32_t main() {
+    ios_base::sync_with_stdio(0);
+    cin.tie(0);
+
+    int t;
+    if (!(cin >> t)) t = 1;
+    while (t--) {
+        build();
+    }
+    RE 0;
 }
